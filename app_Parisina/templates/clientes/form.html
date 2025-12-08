@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <h2>Editar Cliente: {{ cliente.user.username }}</h2>
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-section">
+                <h3>Información de la Cuenta</h3>
+                <div class="form-group">
+                    <label>Nombre de Usuario:</label>
+                    <input type="text" value="{{ cliente.user.username }}" class="form-control" disabled>
+                    <small class="help-text">El nombre de usuario no se puede modificar</small>
+                </div>
+                <div class="form-group">
+                    <label>Email de la Cuenta:</label>
+                    <input type="text" value="{{ cliente.user.email }}" class="form-control" disabled>
+                    <small class="help-text">El email de la cuenta no se puede modificar</small>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Información de Contacto</h3>
+                <div class="form-group">
+                    <label for="telefono">Teléfono:</label>
+                    <input type="text" name="telefono" id="telefono" value="{{ cliente.telefono|default:'' }}" class="form-control" placeholder="Ej: 55 1234 5678">
+                </div>
+                <div class="form-group">
+                    <label for="direccion">Dirección:</label>
+                    <input type="text" name="direccion" id="direccion" value="{{ cliente.direccion|default:'' }}" class="form-control" placeholder="Calle, número, colonia">
+                </div>
+                <div class="form-group">
+                    <label for="correo">Correo de Contacto:</label>
+                    <input type="email" name="correo" id="correo" value="{{ cliente.correo|default:'' }}" class="form-control" placeholder="correo@ejemplo.com">
+                </div>
+                <div class="form-group">
+                    <label for="codigo_postal">Código Postal:</label>
+                    <input type="text" name="codigo_postal" id="codigo_postal" value="{{ cliente.codigo_postal|default:'' }}" class="form-control" placeholder="12345">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                <a href="{% url 'lista_clientes' %}" class="btn btn-outline">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

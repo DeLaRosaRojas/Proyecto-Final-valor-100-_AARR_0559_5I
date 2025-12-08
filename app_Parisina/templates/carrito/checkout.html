@@ -1,0 +1,631 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="checkout-container">
+        <h1>Finalizar Compra</h1>
+        
+        <div class="checkout-content">
+            <div class="checkout-form">
+                <h2>Información de Envío y Pago</h2>
+                <form method="post" id="checkout-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-section">
+                        <h3>Información de Envío</h3>
+                        <div class="form-group">
+                            <label for="direccion">Dirección de Envío:</label>
+                            <input type="text" name="direccion" id="direccion" 
+                                   value="{{ cliente.direccion|default:'' }}" 
+                                   class="form-control" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h3>Método de Pago</h3>
+                        <div class="form-group">
+                            <label for="metodo_pago">Selecciona método de pago:</label>
+                            <select name="metodo_pago" id="metodo_pago" class="form-control" required>
+                                <option value="">Selecciona un método de pago</option>
+                                <option value="tarjeta_credito">Tarjeta de Crédito</option>
+                                <option value="tarjeta_debito">Tarjeta de Débito</option>
+                                <option value="paypal">PayPal</option>
+                                <option value="transferencia">Transferencia Bancaria</option>
+                            </select>
+                        </div>
+
+                        <!-- FORMULARIO TARJETA DE CRÉDITO/DÉBITO -->
+                        <div id="form-tarjeta" class="payment-form" style="display: none;">
+                            <h4>Información de la Tarjeta</h4>
+                            <div class="form-group">
+                                <label for="numero_tarjeta">Número de Tarjeta:</label>
+                                <input type="text" name="numero_tarjeta" id="numero_tarjeta" 
+                                       class="form-control" placeholder="1234 5678 9012 3456" maxlength="19"
+                                       data-valida-tarjeta="true">
+                                <small class="error-message" id="error-tarjeta" style="color: red; display: none;"></small>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="fecha_vencimiento">Fecha de Vencimiento:</label>
+                                    <input type="text" name="fecha_vencimiento" id="fecha_vencimiento" 
+                                           class="form-control" placeholder="MM/AA" maxlength="5"
+                                           data-valida-fecha="true">
+                                    <small class="error-message" id="error-fecha" style="color: red; display: none;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cvv">CVV:</label>
+                                    <input type="text" name="cvv" id="cvv" 
+                                           class="form-control" placeholder="123" maxlength="4"
+                                           data-valida-cvv="true">
+                                    <small class="error-message" id="error-cvv" style="color: red; display: none;"></small>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="nombre_tarjeta">Nombre en la Tarjeta:</label>
+                                <input type="text" name="nombre_tarjeta" id="nombre_tarjeta" 
+                                       class="form-control" placeholder="JUAN PEREZ"
+                                       data-valida-nombre="true">
+                                <small class="error-message" id="error-nombre" style="color: red; display: none;"></small>
+                            </div>
+                        </div>
+
+                        <!-- FORMULARIO PAYPAL -->
+                        <div id="form-paypal" class="payment-form" style="display: none;">
+                            <h4>Iniciar Sesión en PayPal</h4>
+                            <div class="paypal-simulation">
+                                <div class="form-group">
+                                    <label for="email_paypal">Email o número de móvil:</label>
+                                    <input type="text" name="email_paypal" id="email_paypal" 
+                                           class="form-control" placeholder="tu@email.com"
+                                           data-valida-paypal="true">
+                                    <small class="error-message" id="error-paypal-email" style="color: red; display: none;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="password_paypal">Contraseña:</label>
+                                    <input type="password" name="password_paypal" id="password_paypal" 
+                                           class="form-control" placeholder="Tu contraseña de PayPal"
+                                           data-valida-paypal-pass="true">
+                                    <small class="error-message" id="error-paypal-pass" style="color: red; display: none;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <button type="button" id="btn-login-paypal" class="btn btn-paypal">
+                                        Iniciar Sesión en PayPal
+                                    </button>
+                                </div>
+                                <div id="paypal-success" style="display: none; background: #d4edda; padding: 10px; border-radius: 4px;">
+                                    <span style="color: #155724;">✅ Sesión iniciada correctamente</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FORMULARIO TRANSFERENCIA -->
+                        <div id="form-transferencia" class="payment-form" style="display: none;">
+                            <h4>Información para Transferencia Bancaria</h4>
+                            <div class="bank-info">
+                                <div class="bank-details">
+                                    <p><strong>Banco:</strong> BBVA</p>
+                                    <p><strong>Beneficiario:</strong> Parisina S.A. de C.V.</p>
+                                    <p><strong>CLABE:</strong> 012 180 01234567890 1</p>
+                                    <p><strong>Cuenta:</strong> 0123 4567 8901</p>
+                                    <p><strong>RFC:</strong> PAR850101XXX</p>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="comprobante_transferencia">Número de Referencia/Comprobante:</label>
+                                <input type="text" name="comprobante_transferencia" id="comprobante_transferencia" 
+                                       class="form-control" placeholder="Ej: TRF20241225ABC123"
+                                       data-valida-transferencia="true">
+                                <small class="form-text">Ingresa el número de referencia que te proporcionó tu banco</small>
+                                <small class="error-message" id="error-transferencia" style="color: red; display: none;"></small>
+                            </div>
+                            <div class="form-group">
+                                <label for="fecha_transferencia">Fecha de Transferencia:</label>
+                                <input type="date" name="fecha_transferencia" id="fecha_transferencia" 
+                                       class="form-control"
+                                       data-valida-fecha-transferencia="true">
+                                <small class="error-message" id="error-fecha-transferencia" style="color: red; display: none;"></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="checkout-actions">
+                        <button type="submit" class="btn btn-primary btn-large" id="btn-confirmar">
+                            Confirmar Pedido
+                        </button>
+                        <a href="{% url 'ver_carrito' %}" class="btn btn-outline">Volver al Carrito</a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="checkout-summary">
+                <h2>Resumen del Pedido</h2>
+                <div class="summary-items">
+                    {% for item in pedido.items.all %}
+                    <div class="summary-item">
+                        <span>{{ item.cantidad }}x {{ item.producto.nombre }}</span>
+                        <span>${{ item.subtotal }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="summary-totals">
+                    <div class="total-line">
+                        <span>Subtotal:</span>
+                        <span>${{ subtotal|floatformat:2 }}</span>
+                    </div>
+                    <div class="total-line">
+                        <span>Impuestos (16%):</span>
+                        <span>${{ impuestos|floatformat:2 }}</span>
+                    </div>
+                    <div class="total-line total-final">
+                        <span><strong>Total:</strong></span>
+                        <span><strong>${{ total|floatformat:2 }}</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript para validaciones de pago -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const metodoPago = document.getElementById('metodo_pago');
+    const formTarjeta = document.getElementById('form-tarjeta');
+    const formPaypal = document.getElementById('form-paypal');
+    const formTransferencia = document.getElementById('form-transferencia');
+    const checkoutForm = document.getElementById('checkout-form');
+    const btnConfirmar = document.getElementById('btn-confirmar');
+    const btnLoginPaypal = document.getElementById('btn-login-paypal');
+    const paypalSuccess = document.getElementById('paypal-success');
+
+    let paypalAutenticado = false;
+
+    // =============================================
+    // FUNCIONES DE VALIDACIÓN
+    // =============================================
+
+    function validarNumeroTarjeta(numero) {
+    const numeroLimpio = numero.replace(/\s/g, '');
+    
+    // Solo validar longitud y que sean números
+    if (numeroLimpio.length < 13 || numeroLimpio.length > 19) {
+        return { valido: false, mensaje: 'El número de tarjeta debe tener entre 13 y 19 dígitos' };
+    }
+    
+    if (!/^\d+$/.test(numeroLimpio)) {
+        return { valido: false, mensaje: 'El número de tarjeta solo puede contener números' };
+    }
+    
+    // ✅ QUITAMOS EL ALGORITMO DE LUHN
+    // ✅ AHORA ACEPTARÁ CUALQUIER NÚMERO CON LA LONGITUD CORRECTA
+    
+    return { valido: true, mensaje: '' };
+}
+
+    function validarFechaVencimiento(fecha) {
+        // Validar formato MM/AA
+        if (!/^\d{2}\/\d{2}$/.test(fecha)) {
+            return { valido: false, mensaje: 'Formato inválido. Usa MM/AA' };
+        }
+        
+        const [mes, año] = fecha.split('/').map(Number);
+        
+        // Validar mes
+        if (mes < 1 || mes > 12) {
+            return { valido: false, mensaje: 'Mes inválido' };
+        }
+        
+        // Validar que no sea una fecha pasada
+        const ahora = new Date();
+        const añoActual = ahora.getFullYear() % 100; // Últimos 2 dígitos
+        const mesActual = ahora.getMonth() + 1; // Mes actual (1-12)
+        
+        if (año < añoActual || (año === añoActual && mes < mesActual)) {
+            return { valido: false, mensaje: 'La tarjeta está vencida' };
+        }
+        
+        // Validar que no sea más de 10 años en el futuro
+        if (año > añoActual + 10) {
+            return { valido: false, mensaje: 'Fecha de vencimiento demasiado lejana' };
+        }
+        
+        return { valido: true, mensaje: '' };
+    }
+
+    function validarCVV(cvv) {
+        if (!/^\d{3,4}$/.test(cvv)) {
+            return { valido: false, mensaje: 'El CVV debe tener 3 o 4 dígitos' };
+        }
+        return { valido: true, mensaje: '' };
+    }
+
+    function validarNombreTarjeta(nombre) {
+        if (nombre.trim().length < 3) {
+            return { valido: false, mensaje: 'El nombre debe tener al menos 3 caracteres' };
+        }
+        
+        if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre)) {
+            return { valido: false, mensaje: 'El nombre solo puede contener letras y espacios' };
+        }
+        
+        return { valido: true, mensaje: '' };
+    }
+
+    function validarEmailPaypal(email) {
+        if (!email.trim()) {
+            return { valido: false, mensaje: 'El email es requerido' };
+        }
+        
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return { valido: false, mensaje: 'Email inválido' };
+        }
+        
+        return { valido: true, mensaje: '' };
+    }
+
+    function validarPasswordPaypal(password) {
+        if (!password.trim()) {
+            return { valido: false, mensaje: 'La contraseña es requerida' };
+        }
+        
+        if (password.length < 6) {
+            return { valido: false, mensaje: 'La contraseña debe tener al menos 6 caracteres' };
+        }
+        
+        return { valido: true, mensaje: '' };
+    }
+
+    function validarComprobanteTransferencia(comprobante) {
+        if (!comprobante.trim()) {
+            return { valido: false, mensaje: 'El número de comprobante es requerido' };
+        }
+        
+        if (comprobante.length < 5) {
+            return { valido: false, mensaje: 'El comprobante debe tener al menos 5 caracteres' };
+        }
+        
+        return { valido: true, mensaje: '' };
+    }
+
+    function validarFechaTransferencia(fecha) {
+        if (!fecha) {
+            return { valido: false, mensaje: 'La fecha de transferencia es requerida' };
+        }
+        
+        const fechaTransferencia = new Date(fecha);
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        
+        if (fechaTransferencia > hoy) {
+            return { valido: false, mensaje: 'La fecha de transferencia no puede ser futura' };
+        }
+        
+        // No permitir transferencias de hace más de 30 días
+        const limite30Dias = new Date();
+        limite30Dias.setDate(hoy.getDate() - 30);
+        
+        if (fechaTransferencia < limite30Dias) {
+            return { valido: false, mensaje: 'La transferencia no puede ser de hace más de 30 días' };
+        }
+        
+        return { valido: true, mensaje: '' };
+    }
+
+    // =============================================
+    // FUNCIONES DE VISUALIZACIÓN
+    // =============================================
+
+    function mostrarError(elementoId, mensaje) {
+        const errorElement = document.getElementById(elementoId);
+        errorElement.textContent = mensaje;
+        errorElement.style.display = 'block';
+    }
+
+    function ocultarError(elementoId) {
+        const errorElement = document.getElementById(elementoId);
+        errorElement.style.display = 'none';
+    }
+
+    function mostrarFormularioPago() {
+        // Ocultar todos los formularios primero
+        formTarjeta.style.display = 'none';
+        formPaypal.style.display = 'none';
+        formTransferencia.style.display = 'none';
+        
+        // Resetear estado de PayPal
+        paypalAutenticado = false;
+        paypalSuccess.style.display = 'none';
+
+        // Mostrar el formulario correspondiente
+        const valor = metodoPago.value;
+        if (valor === 'tarjeta_credito' || valor === 'tarjeta_debito') {
+            formTarjeta.style.display = 'block';
+        } else if (valor === 'paypal') {
+            formPaypal.style.display = 'block';
+        } else if (valor === 'transferencia') {
+            formTransferencia.style.display = 'block';
+        }
+    }
+
+    // =============================================
+    // EVENT LISTENERS
+    // =============================================
+
+    // Cambio de método de pago
+    metodoPago.addEventListener('change', mostrarFormularioPago);
+
+    // Validación en tiempo real para tarjeta
+    document.getElementById('numero_tarjeta')?.addEventListener('blur', function() {
+        const validacion = validarNumeroTarjeta(this.value);
+        if (!validacion.valido) {
+            mostrarError('error-tarjeta', validacion.mensaje);
+        } else {
+            ocultarError('error-tarjeta');
+        }
+    });
+
+    document.getElementById('fecha_vencimiento')?.addEventListener('blur', function() {
+        const validacion = validarFechaVencimiento(this.value);
+        if (!validacion.valido) {
+            mostrarError('error-fecha', validacion.mensaje);
+        } else {
+            ocultarError('error-fecha');
+        }
+    });
+
+    document.getElementById('cvv')?.addEventListener('blur', function() {
+        const validacion = validarCVV(this.value);
+        if (!validacion.valido) {
+            mostrarError('error-cvv', validacion.mensaje);
+        } else {
+            ocultarError('error-cvv');
+        }
+    });
+
+    document.getElementById('nombre_tarjeta')?.addEventListener('blur', function() {
+        const validacion = validarNombreTarjeta(this.value);
+        if (!validacion.valido) {
+            mostrarError('error-nombre', validacion.mensaje);
+        } else {
+            ocultarError('error-nombre');
+        }
+    });
+
+    // Login de PayPal (simulación)
+    btnLoginPaypal?.addEventListener('click', function() {
+        const email = document.getElementById('email_paypal').value;
+        const password = document.getElementById('password_paypal').value;
+        
+        const validacionEmail = validarEmailPaypal(email);
+        const validacionPassword = validarPasswordPaypal(password);
+        
+        let hayErrores = false;
+        
+        if (!validacionEmail.valido) {
+            mostrarError('error-paypal-email', validacionEmail.mensaje);
+            hayErrores = true;
+        } else {
+            ocultarError('error-paypal-email');
+        }
+        
+        if (!validacionPassword.valido) {
+            mostrarError('error-paypal-pass', validacionPassword.mensaje);
+            hayErrores = true;
+        } else {
+            ocultarError('error-paypal-pass');
+        }
+        
+        if (!hayErrores) {
+            // Simular proceso de login
+            btnLoginPaypal.innerHTML = 'Iniciando sesión...';
+            btnLoginPaypal.disabled = true;
+            
+            setTimeout(() => {
+                paypalAutenticado = true;
+                paypalSuccess.style.display = 'block';
+                btnLoginPaypal.innerHTML = 'Sesión Iniciada';
+                btnLoginPaypal.style.backgroundColor = '#28a745';
+                
+                // Simular obtención de datos de PayPal
+                document.getElementById('email_paypal').value = 'usuario_paypal_autenticado@ejemplo.com';
+                
+                console.log('PayPal: Usuario autenticado correctamente');
+            }, 2000);
+        }
+    });
+
+    // =============================================
+    // VALIDACIÓN FINAL DEL FORMULARIO
+    // =============================================
+
+    checkoutForm.addEventListener('submit', function(e) {
+        const metodo = metodoPago.value;
+        let formularioValido = true;
+        
+        // Validar método de pago seleccionado
+        if (!metodo) {
+            alert('Por favor selecciona un método de pago.');
+            e.preventDefault();
+            return;
+        }
+        
+        // Validaciones específicas por método de pago
+        if (metodo === 'tarjeta_credito' || metodo === 'tarjeta_debito') {
+            const numeroTarjeta = document.getElementById('numero_tarjeta').value;
+            const fechaVencimiento = document.getElementById('fecha_vencimiento').value;
+            const cvv = document.getElementById('cvv').value;
+            const nombreTarjeta = document.getElementById('nombre_tarjeta').value;
+            
+            const valNumero = validarNumeroTarjeta(numeroTarjeta);
+            const valFecha = validarFechaVencimiento(fechaVencimiento);
+            const valCVV = validarCVV(cvv);
+            const valNombre = validarNombreTarjeta(nombreTarjeta);
+            
+            if (!valNumero.valido) {
+                mostrarError('error-tarjeta', valNumero.mensaje);
+                formularioValido = false;
+            }
+            if (!valFecha.valido) {
+                mostrarError('error-fecha', valFecha.mensaje);
+                formularioValido = false;
+            }
+            if (!valCVV.valido) {
+                mostrarError('error-cvv', valCVV.mensaje);
+                formularioValido = false;
+            }
+            if (!valNombre.valido) {
+                mostrarError('error-nombre', valNombre.mensaje);
+                formularioValido = false;
+            }
+            
+        } else if (metodo === 'paypal') {
+            if (!paypalAutenticado) {
+                alert('Por favor inicia sesión en PayPal antes de continuar.');
+                e.preventDefault();
+                return;
+            }
+            
+        } else if (metodo === 'transferencia') {
+            const comprobante = document.getElementById('comprobante_transferencia').value;
+            const fechaTransferencia = document.getElementById('fecha_transferencia').value;
+            
+            const valComprobante = validarComprobanteTransferencia(comprobante);
+            const valFechaTransferencia = validarFechaTransferencia(fechaTransferencia);
+            
+            if (!valComprobante.valido) {
+                mostrarError('error-transferencia', valComprobante.mensaje);
+                formularioValido = false;
+            }
+            if (!valFechaTransferencia.valido) {
+                mostrarError('error-fecha-transferencia', valFechaTransferencia.mensaje);
+                formularioValido = false;
+            }
+        }
+        
+        if (!formularioValido) {
+            e.preventDefault();
+            alert('Por favor corrige los errores en el formulario antes de continuar.');
+        } else {
+            // Mostrar loading
+            btnConfirmar.innerHTML = 'Procesando pago...';
+            btnConfirmar.disabled = true;
+            console.log('Formulario válido, procesando pago con método:', metodo);
+        }
+    });
+
+    // Formateadores visuales
+    document.getElementById('numero_tarjeta')?.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        let formattedValue = '';
+        
+        for (let i = 0; i < value.length; i++) {
+            if (i > 0 && i % 4 === 0) {
+                formattedValue += ' ';
+            }
+            formattedValue += value[i];
+        }
+        
+        e.target.value = formattedValue;
+        ocultarError('error-tarjeta');
+    });
+
+    document.getElementById('fecha_vencimiento')?.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length >= 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        }
+        e.target.value = value;
+        ocultarError('error-fecha');
+    });
+
+    document.getElementById('cvv')?.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/\D/g, '');
+        ocultarError('error-cvv');
+    });
+});
+</script>
+
+<style>
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.payment-form {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    border-left: 4px solid var(--rojo);
+}
+
+.payment-form h4 {
+    margin-bottom: 15px;
+    color: var(--negro);
+}
+
+.bank-info {
+    background: white;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+}
+
+.bank-details p {
+    margin-bottom: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.bank-details p:last-child {
+    border-bottom: none;
+}
+
+.paypal-simulation {
+    background: white;
+    padding: 20px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.btn-paypal {
+    background-color: #0070ba;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    width: 100%;
+    font-size: 1rem;
+}
+
+.btn-paypal:hover {
+    background-color: #005ea6;
+}
+
+.error-message {
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: block;
+}
+
+.form-text {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 5px;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .payment-form {
+        padding: 15px;
+    }
+}
+</style>
+{% endblock %}

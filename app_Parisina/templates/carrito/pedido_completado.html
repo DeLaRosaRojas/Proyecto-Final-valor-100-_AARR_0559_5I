@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="pedido-completado">
+        <div class="completado-icon">✅</div>
+        <h1>¡Pedido Completado!</h1>
+        <p>Tu pedido ha sido procesado exitosamente.</p>
+        <p>Puedes seguir el estado de tu pedido en la sección "Mis Pedidos".</p>
+        <p>Recibirás actualizaciones por correo electrónico.</p>
+        <p class="gracias-text">Gracias por comprar en Parisina.</p>
+        
+        <div class="completado-actions">
+            <a href="{% url 'mis_pedidos' %}" class="btn btn-primary">Ver Mis Pedidos</a>
+            <a href="{% url 'inicio' %}" class="btn btn-outline">Seguir Comprando</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

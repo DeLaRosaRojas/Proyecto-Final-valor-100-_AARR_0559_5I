@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Gestión de Pedidos</h1>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Total</th>
+                    <th>Items</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pedido in pedidos %}
+                <tr>
+                    <td>#{{ pedido.id }}</td>
+                    <td>{{ pedido.cliente.user.username }}</td>
+                    <td>{{ pedido.fecha_pedido|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <span class="estado-badge estado-{{ pedido.estado }}">
+                            {{ pedido.get_estado_display }}
+                        </span>
+                    </td>
+                    <td>${{ pedido.total|floatformat:2 }}</td>
+                    <td>{{ pedido.items.count }} items</td>
+                    <td class="actions">
+                        <a href="{% url 'detalle_pedido' pedido.id %}" class="btn btn-primary btn-sm">Ver</a>
+                        <a href="{% url 'editar_pedido' pedido.id %}" class="btn btn-secondary btn-sm">Editar</a>
+                        <a href="{% url 'eliminar_pedido' pedido.id %}" class="btn btn-danger btn-sm">Eliminar</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="empty-table">No hay pedidos registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-form">
+        <h2>Iniciar Sesión</h2>
+        
+        {% if not user.is_authenticated %}
+        <div id="producto-pendiente-message" style="display: none;" class="alert alert-info">
+            Tienes un producto pendiente en el carrito. Será agregado después de iniciar sesión.
+        </div>
+        {% endif %}
+        
+        <form method="post" id="login-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_username">Usuario:</label>
+                <input type="text" name="username" id="id_username" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="id_password">Contraseña:</label>
+                <input type="password" name="password" id="id_password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
+        </form>
+        <p class="auth-link">
+            ¿No tienes cuenta? <a href="{% url 'registro' %}">Regístrate aquí</a>
+        </p>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar si hay producto pendiente en localStorage
+    const productoPendiente = localStorage.getItem('producto_pendiente');
+    const mensajeProducto = document.getElementById('producto-pendiente-message');
+    
+    if (productoPendiente && mensajeProducto) {
+        mensajeProducto.style.display = 'block';
+        
+        // Procesar producto pendiente después del login
+        const loginForm = document.getElementById('login-form');
+        loginForm.addEventListener('submit', function() {
+            // El producto se procesará automáticamente después del login
+            // gracias a la clase user-authenticated y el JavaScript del base.html
+        });
+    }
+    
+    // Después del login exitoso, procesar producto pendiente
+    if (document.body.classList.contains('user-authenticated')) {
+        const productoPendiente = localStorage.getItem('producto_pendiente');
+        if (productoPendiente) {
+            const producto = JSON.parse(productoPendiente);
+            
+            // Crear formulario para enviar el producto pendiente
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            formData.append('tipo', producto.tipo);
+            formData.append('producto_id', producto.producto_id);
+            formData.append('cantidad', producto.cantidad);
+            
+            fetch('/procesar-producto-pendiente/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Limpiar producto pendiente
+                    localStorage.removeItem('producto_pendiente');
+                    // Redirigir a la página de origen o al carrito
+                    window.location.href = '/carrito/';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                localStorage.removeItem('producto_pendiente');
+                window.location.href = '/';
+            });
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-form">
+        <h2>Registrarse en Parisina</h2>
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Información de la Cuenta -->
+            <div class="form-section">
+                <h3>Información de la Cuenta</h3>
+                
+                <div class="form-group">
+                    <label for="id_username">Nombre de Usuario:</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                    <div class="error">{{ form.username.errors }}</div>
+                    {% endif %}
+                    <small class="help-text">Requerido. 150 caracteres o menos. Solo letras, dígitos y @/./+/-/_.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_email">Correo Electrónico (para la cuenta):</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <div class="error">{{ form.email.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_password1">Contraseña:</label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                    <div class="error">{{ form.password1.errors }}</div>
+                    {% endif %}
+                    <div class="password-requirements">
+                        <small>Tu contraseña debe contener al menos:</small>
+                        <ul>
+                            <li>8 caracteres</li>
+                            <li>No puede ser similar a tu información personal</li>
+                            <li>No puede ser una contraseña común</li>
+                            <li>No puede ser enteramente numérica</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_password2">Confirmar Contraseña:</label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                    <div class="error">{{ form.password2.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Información Personal -->
+            <div class="form-section">
+                <h3>Información Personal</h3>
+
+                <div class="form-group">
+                    <label for="id_correo">Correo Electrónico (de contacto):</label>
+                    {{ form.correo }}
+                    {% if form.correo.errors %}
+                    <div class="error">{{ form.correo.errors }}</div>
+                    {% endif %}
+                    <small class="help-text">Para notificaciones y contacto directo.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_telefono">Teléfono:</label>
+                    {{ form.telefono }}
+                    {% if form.telefono.errors %}
+                    <div class="error">{{ form.telefono.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_direccion">Dirección:</label>
+                    {{ form.direccion }}
+                    {% if form.direccion.errors %}
+                    <div class="error">{{ form.direccion.errors }}</div>
+                    {% endif %}
+                    <small class="help-text">Opcional. Para envíos futuros.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_codigo_postal">Código Postal:</label>
+                    {{ form.codigo_postal }}
+                    {% if form.codigo_postal.errors %}
+                    <div class="error">{{ form.codigo_postal.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block mt-4">Registrarse</button>
+        </form>
+        
+        <p class="auth-link">
+            ¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión aquí</a>
+        </p>
+    </div>
+</div>
+
+<style>
+/* Estilos específicos para el formulario de registro */
+.password-requirements {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border-left: 3px solid #a20000;
+}
+
+.password-requirements ul {
+    margin: 5px 0 0 0;
+    padding-left: 20px;
+    color: #666;
+}
+
+.password-requirements li {
+    margin-bottom: 3px;
+    font-size: 0.9rem;
+}
+
+.form-check {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.form-check input[type="checkbox"] {
+    margin-right: 10px;
+    transform: scale(1.2);
+}
+
+.form-check-label {
+    font-size: 0.95rem;
+    color: #333;
+}
+
+.terms-link {
+    color: var(--rojo);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.terms-link:hover {
+    text-decoration: underline;
+    color: #cc0000;
+}
+
+.help-text {
+    color: #666;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Asegurar que todos los inputs tengan el mismo estilo */
+#id_password1, #id_password2 {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--borde-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    background-color: white;
+    transition: border-color 0.3s ease;
+}
+
+#id_password1:focus, #id_password2:focus {
+    outline: none;
+    border-color: var(--rojo);
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.3);
+}
+
+/* Estilo para errores */
+.error {
+    color: var(--rojo);
+    font-size: 0.9rem;
+    margin-top: 5px;
+    font-weight: 500;
+}
+
+.mt-4 {
+    margin-top: 1.5rem !important;
+}
+
+/* Mejorar el diseño responsive */
+@media (max-width: 576px) {
+    .auth-form {
+        padding: 20px;
+    }
+    
+    .form-section {
+        padding: 15px;
+    }
+    
+    .password-requirements ul {
+        padding-left: 15px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar/ocultar contraseña (opcional)
+    const passwordFields = document.querySelectorAll('input[type="password"]');
+    
+    // Asegurar que todos los campos tengan placeholder si no lo tienen
+    if (!document.getElementById('id_password1').placeholder) {
+        document.getElementById('id_password1').placeholder = 'Crea una contraseña segura';
+    }
+    
+    if (!document.getElementById('id_password2').placeholder) {
+        document.getElementById('id_password2').placeholder = 'Repite tu contraseña';
+    }
+    
+    // Validación en tiempo real de coincidencia de contraseñas
+    const password1 = document.getElementById('id_password1');
+    const password2 = document.getElementById('id_password2');
+    
+    function validarCoincidenciaContraseñas() {
+        if (password1.value && password2.value && password1.value !== password2.value) {
+            // Crear o mostrar mensaje de error
+            let errorElement = document.getElementById('error-password-match');
+            if (!errorElement) {
+                errorElement = document.createElement('div');
+                errorElement.id = 'error-password-match';
+                errorElement.className = 'error';
+                errorElement.style.marginTop = '5px';
+                password2.parentNode.appendChild(errorElement);
+            }
+            errorElement.textContent = 'Las contraseñas no coinciden.';
+        } else {
+            const errorElement = document.getElementById('error-password-match');
+            if (errorElement) {
+                errorElement.remove();
+            }
+        }
+    }
+    
+    if (password1 && password2) {
+        password1.addEventListener('input', validarCoincidenciaContraseñas);
+        password2.addEventListener('input', validarCoincidenciaContraseñas);
+    }
+    
+    // Mejorar la experiencia del formulario
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        // Validación básica antes de enviar
+        const requiredFields = this.querySelectorAll('[required]');
+        let valid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                valid = false;
+                field.style.borderColor = 'red';
+            } else {
+                field.style.borderColor = '';
+            }
+        });
+        
+        // Validar términos y condiciones
+        const terminos = document.getElementById('id_terminos');
+        if (terminos && !terminos.checked) {
+            alert('Debes aceptar los Términos y Condiciones para registrarte.');
+            e.preventDefault();
+            return;
+        }
+        
+        if (!valid) {
+            e.preventDefault();
+            alert('Por favor completa todos los campos requeridos.');
+        }
+    });
+});
+</script>
+{% endblock %}

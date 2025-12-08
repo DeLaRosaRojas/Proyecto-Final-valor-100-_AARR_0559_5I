@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Proveedores</h1>
+        {% if user.is_staff %}
+        <a href="{% url 'agregar_proveedor' %}" class="btn btn-primary">Agregar Nuevo Proveedor</a>
+        {% endif %}
+    </div>
+
+    <div class="proveedores-grid">
+        {% for proveedor in proveedores %}
+        <div class="proveedor-card">
+            {% if proveedor.imagen %}
+            <img src="{{ proveedor.imagen.url }}" alt="{{ proveedor.empresa }}" class="proveedor-image">
+            {% else %}
+            <img src="{% static 'images/placeholder.jpg' %}" alt="Sin imagen" class="proveedor-image">
+            {% endif %}
+            <div class="proveedor-info">
+                <h3>{{ proveedor.empresa }}</h3>  <!-- ← Cambiado de nombre a empresa -->
+                <p><strong>Teléfono:</strong> {{ proveedor.telefono }}</p>
+                <p><strong>Email:</strong> {{ proveedor.correo }}</p>
+                <p><strong>Dirección:</strong> {{ proveedor.direccion }}, {{ proveedor.ciudad }}</p>
+                {% if proveedor.pais %}
+                <p><strong>País:</strong> {{ proveedor.pais }}</p>
+                {% endif %}
+                
+                {% if user.is_staff %}
+                <div class="admin-actions">
+                    <a href="{% url 'editar_proveedor' proveedor.id %}" class="btn btn-secondary">Editar</a>
+                    <a href="{% url 'eliminar_proveedor' proveedor.id %}" class="btn btn-danger">Eliminar</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>No hay proveedores registrados.</p>
+            {% if user.is_staff %}
+            <a href="{% url 'agregar_proveedor' %}" class="btn btn-primary">Agregar el Primer Proveedor</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

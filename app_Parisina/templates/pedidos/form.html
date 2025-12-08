@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <h2>Editar Pedido #{{ pedido.id }}</h2>
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-section">
+                <h3>Información del Pedido</h3>
+                <div class="form-group">
+                    <label>Cliente:</label>
+                    <input type="text" value="{{ pedido.cliente.user.username }}" class="form-control" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Fecha:</label>
+                    <input type="text" value="{{ pedido.fecha_pedido|date:'d/m/Y H:i' }}" class="form-control" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="direccion_envio">Dirección de Envío:</label>
+                    <input type="text" name="direccion_envio" id="direccion_envio" value="{{ pedido.direccion_envio }}" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="estado">Estado:</label>
+                    <select name="estado" id="estado" class="form-control" required>
+                        {% for valor, etiqueta in pedido.ESTADOS %}
+                        <option value="{{ valor }}" {% if pedido.estado == valor %}selected{% endif %}>
+                            {{ etiqueta }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                <a href="{% url 'lista_pedidos' %}" class="btn btn-outline">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

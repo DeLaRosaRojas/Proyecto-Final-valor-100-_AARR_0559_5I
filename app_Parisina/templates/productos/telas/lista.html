@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Catálogo de Telas</h1>
+        {% if user.is_staff %}
+        <a href="{% url 'agregar_tela' %}" class="btn btn-primary">Agregar Nueva Tela</a>
+        {% endif %}
+    </div>
+
+    <div class="product-grid">
+        {% for tela in telas %}
+        <div class="product-card">
+            {% if tela.imagen %}
+            <img src="{{ tela.imagen.url }}" alt="{{ tela.nombre }}" class="product-image">
+            {% else %}
+            <img src="{% static 'images/placeholder.jpg' %}" alt="Sin imagen" class="product-image">
+            {% endif %}
+            <div class="product-info">
+                <h3>{{ tela.nombre }}</h3>
+                <p class="product-detail"><strong>Tipo:</strong> {{ tela.tipo_tela }}</p>
+                <p class="product-detail"><strong>Color:</strong> {{ tela.color }}</p>
+                <p class="product-detail"><strong>Unidad:</strong> {{ tela.get_unidad_display }}</p>
+                <p class="product-price">${{ tela.precio }} / {{ tela.get_unidad_display }}</p>
+                
+                <!-- SOLO ADMIN VE STOCK Y PROVEEDOR -->
+                {% if user.is_staff %}
+                <p class="product-detail"><strong>Stock:</strong> {{ tela.stock }}</p>
+                <p class="product-detail"><strong>Proveedor:</strong> {{ tela.proveedor.empresa }}</p>
+                {% endif %}
+                
+                {% if tela.descripcion %}
+                <p class="product-description">{{ tela.descripcion }}</p>
+                {% endif %}
+
+                <div class="product-actions">
+                    <!-- BOTÓN AGREGAR AL CARRITO PARA CLIENTES Y NO REGISTRADOS -->
+                    {% if not user.is_staff %}
+                    <button class="btn btn-primary agregar-carrito-btn" 
+                            data-tipo="telas" 
+                            data-producto-id="{{ tela.id }}"
+                            data-producto-nombre="{{ tela.nombre }}"
+                            data-producto-precio="{{ tela.precio }}"
+                            data-producto-stock="{{ tela.stock }}"
+                            data-producto-unidad="{{ tela.get_unidad_display }}">
+                        Agregar al Carrito
+                    </button>
+                    {% endif %}
+                    
+                    {% if user.is_staff %}
+                    <div class="admin-actions">
+                        <a href="{% url 'editar_tela' tela.id %}" class="btn btn-secondary">Editar</a>
+                        <a href="{% url 'eliminar_tela' tela.id %}" class="btn btn-danger">Eliminar</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>No hay telas disponibles en este momento.</p>
+            {% if user.is_staff %}
+            <a href="{% url 'agregar_tela' %}" class="btn btn-primary">Agregar la Primera Tela</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

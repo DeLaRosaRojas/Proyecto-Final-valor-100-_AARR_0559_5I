@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>Gestión de Clientes</h1>
+    </div>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>Dirección</th>
+                    <th>Código Postal</th>
+                    <th>Fecha Registro</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in clientes %}
+                <tr>
+                    <td>{{ cliente.user.username }}</td>
+                    <td>{{ cliente.correo|default:cliente.user.email }}</td>
+                    <td>{{ cliente.telefono|default:"-" }}</td>
+                    <td>{{ cliente.direccion|default:"-" }}</td>
+                    <td>{{ cliente.codigo_postal|default:"-" }}</td>
+                    <td>{{ cliente.fecha_registro|date:"d/m/Y" }}</td>
+                    <td class="actions">
+                        <a href="{% url 'editar_cliente' cliente.id %}" class="btn btn-secondary btn-sm">Editar</a>
+                        <a href="{% url 'eliminar_cliente' cliente.id %}" class="btn btn-danger btn-sm">Eliminar</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="empty-table">No hay clientes registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
